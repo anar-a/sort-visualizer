@@ -15,20 +15,39 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    virtual void paintEvent(QPaintEvent *event);
-    void populateData();
-
 private slots:
-    void on_sort_released();
+    void on_sort_clicked();
+
+    void on_comboBox_currentTextChanged(const QString &arg1);
+
+    void on_reset_clicked();
+
+    void on_delay_valueChanged(int delayValue);
+
+    void on_values_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;
-    QVector<int> data;
 
-    void drawAllData(QPainter& painter);
-    void bubbleSort(QVector<int>& toSort);
+    QVector<int> data;
+    QVector<QRect> rectangles;
+
+    bool currentlySorting = false;
+
+    // defaulted in constructor to UI defaults
+    int iterationDelay;
+    int totalValues;
+
+    QString selectedAlgorithm = "None";
+
+    void drawAllData(QPainter &painter);
     void pauseLoop(int mSecPause);
+    void populateData();
+
+    void bubbleSort(QVector<int>& toSort);
+    void selectionSort(QVector<int>& toSort);
+
+    virtual void paintEvent(QPaintEvent *event);
 
 };
 #endif // MAINWINDOW_H

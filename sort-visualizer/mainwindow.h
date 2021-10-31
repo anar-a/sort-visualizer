@@ -30,7 +30,8 @@ private:
     Ui::MainWindow *ui;
 
     QVector<int> data;
-    QVector<QRect> rectangles;
+    QVector<QRect> redRectangles; // extra rectangles to draw as indicators
+    QVector<QRect> blueRectangles;
 
     bool currentlySorting = false;
 
@@ -41,11 +42,14 @@ private:
     QString selectedAlgorithm = "None";
 
     void drawAllData(QPainter &painter);
+    QRect drawIndicator(int value, int position);
+    void drawRectangles(QPainter &painter, QVector<QRect>& rectangles, Qt::GlobalColor color);
     void pauseLoop(int mSecPause);
     void populateData();
 
     void bubbleSort(QVector<int>& toSort);
     void selectionSort(QVector<int>& toSort);
+
 
     virtual void paintEvent(QPaintEvent *event);
 

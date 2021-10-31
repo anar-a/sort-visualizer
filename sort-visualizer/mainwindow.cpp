@@ -22,9 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     this->data = QVector<int>(this->totalValues);
     populateData();     //fill the data array randomly
 
-    this->rectangles = QVector<QRect>(100);
-
-
+    this->redRectangles = QVector<QRect>();
+    this->blueRectangles = QVector<QRect>();
 }
 
 MainWindow::~MainWindow()
@@ -33,11 +32,14 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::populateData(){
+    // if the data vector size isnt equal to the ticker value amount
     if (this->data.size() != this->totalValues) {
         this->data = QVector<int>(this->totalValues);
     }
 
+    // picks the value based on the window height plus 100 pixel padding
     int valueHeight = this->height() - 100;
+
     for (int i = 0; i < this->data.size(); i++){
         this->data[i] = rand() % valueHeight;
     }
@@ -52,14 +54,30 @@ void MainWindow::pauseLoop(int mSecPause)
 }
 
 void MainWindow::drawAllData(QPainter &painter){
-    int rectWidth = this->width() / this->data.size();
-
     for (int i = 0; i < this->data.size(); i++){
-        int posX = rectWidth * i;
-        QRect rect(posX, this->height() - this->data.at(i) - 10, rectWidth, this->data.at(i));
+        QRect rect = drawIndicator(this->data.at(i), i);
+        painter.fillRect(rect, Qt::transparent);
         painter.drawRect(rect);
 
     }
+}
+
+// return a rectangle given a height value and an index position
+QRect MainWindow::drawIndicator(int value, int position)
+{
+    int rectWidth = this->width() / this->data.size();
+    return QRect(rectWidth * position, this->height() - value - 10, rectWidth, value);
+}
+
+void MainWindow::drawRectangles(QPainter& painter, QVector<QRect> &rectangles, Qt::GlobalColor color)
+{
+    for (unsigned int i = 0; i < rectangles.size(); i++){
+        QRect rect = rectangles.at(i);
+        painter.fillRect(rect, color);
+        painter.drawRect(rect);
+    }
+
+    rectangles.clear();
 }
 
 // Classic bubble sort that calls update for QPainter redraw
@@ -70,15 +88,21 @@ void MainWindow::bubbleSort(QVector<int> &toSort){
     connect(ui->sort, &QAbstractButton::released, this, [&breakVar](){breakVar = false;});
 
     for (int i = 0; i < toSort.size() - 1 && breakVar; i++){
-        for (int j = 0; j < toSort.size() - i - 1 && breakVar; j++){
+        for (int j = 0; j < toSort.size() - i - 1 && breakVar; j++){\
+            this->blueRectangles.append(drawIndicator(this->data.at(j), j)); // hightlight current value
+            this->redRectangles.append(drawIndicator(this->data.at(j+1), j+1)); // hightlight next value
+
+            // update called before swap, or lag behind
+            update(); // redraw the array
+            pauseLoop(this->iterationDelay); // pause in MS before next swap
+
             if (toSort[j] > toSort[j+1]) {
                 int temp = toSort[j+1];
                 toSort[j+1] = toSort[j];
                 toSort[j] = temp;
 
-                update(); // redraw the array
-                pauseLoop(this->iterationDelay); // pause in MS before next swap
             }
+
         }
 
     }
@@ -86,15 +110,46 @@ void MainWindow::bubbleSort(QVector<int> &toSort){
 
 void MainWindow::selectionSort(QVector<int> &toSort)
 {
+    bool breakVar = true; // variable to stop the iterating if cancel clicked
 
+    // set break condition on cancel button click
+    connect(ui->sort, &QAbstractButton::released, this, [&breakVar](){breakVar = false;});
+
+    for (int i = 0; i < toSort.size() && breakVar; i++){
+        int minIndex = i;
+
+        for (int j = i+1; j < toSort.size() && breakVar; j++){
+            this->redRectangles.append(drawIndicator(this->data.at(j), j));
+
+            if (toSort.at(j) < toSort.at(minIndex)){
+                minIndex = j;
+
+            }
+            this->blueRectangles.append(drawIndicator(this->data.at(minIndex), minIndex));
+
+            pauseLoop(this->iterationDelay); // pause in MS before next swap
+            update(); // redraw the array
+
+        }
+
+        int temp = toSort[i];
+        toSort[i] = toSort[minIndex];
+        toSort[minIndex] = temp;
+    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *){
     QPainter painter(this);
     drawAllData(painter);
+
+    // draw the leftover rectangles if any
+    drawRectangles(painter, redRectangles, Qt::red);
+    drawRectangles(painter, blueRectangles, Qt::blue);
 }
 
 
+
+// Button bindings below
 
 void MainWindow::on_sort_clicked()
 {

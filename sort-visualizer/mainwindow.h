@@ -49,6 +49,7 @@ private:
 
     void bubbleSort(QVector<int>& toSort);
     void selectionSort(QVector<int>& toSort);
+    void insertionSort(QVector<int>& toSort);
 
 
     virtual void paintEvent(QPaintEvent *event);

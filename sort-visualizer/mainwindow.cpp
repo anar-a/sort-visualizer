@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->comboBox->addItems({"Bubble sort", "Selection sort"});
+    ui->comboBox->addItems({"Bubble sort", "Selection sort", "Insertion sort"});
 
     // set default iteration delay and value amount
     this->iterationDelay = ui->delay->value();
@@ -106,6 +106,7 @@ void MainWindow::bubbleSort(QVector<int> &toSort){
         }
 
     }
+    update();
 }
 
 void MainWindow::selectionSort(QVector<int> &toSort)
@@ -136,6 +137,37 @@ void MainWindow::selectionSort(QVector<int> &toSort)
         toSort[i] = toSort[minIndex];
         toSort[minIndex] = temp;
     }
+    update();
+}
+
+void MainWindow::insertionSort(QVector<int> &toSort)
+{
+    bool breakVar = true;
+
+    // set break condition on cancel button click
+    connect(ui->sort, &QAbstractButton::released, this, [&breakVar](){breakVar = false;});
+
+    for (unsigned int i = 1; i < this->data.size() && breakVar; i++){
+        int val = this->data[i];
+        int j = i-1;
+
+        while (j >= 0 && this->data[j] > val && breakVar) {
+            this->data[j+1] = this->data[j];
+
+            // draw indicators and update painter
+            redRectangles.append(drawIndicator(this->data[j+1], j));
+            blueRectangles.append(drawIndicator(val, j));
+            update();
+            pauseLoop(this->iterationDelay);
+
+            j--;
+        }
+
+        this->data[j+1] = val;
+        update(); // final painter update to clear old indicators
+
+    }
+
 }
 
 void MainWindow::paintEvent(QPaintEvent *){
@@ -163,6 +195,9 @@ void MainWindow::on_sort_clicked()
         }
         else if (this->selectedAlgorithm == "Selection sort"){
             selectionSort(this->data);
+        }
+        else if (this->selectedAlgorithm == "Insertion sort"){
+            insertionSort(this->data);
         }
 
         ui->sort->setText("Sort");

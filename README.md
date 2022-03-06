@@ -1,9 +1,9 @@
 # sort-visualizer
 
-A sort visualizer made with QT C++. A few sort algorithms are already implemented, including bubble sort, selection sort, and insertion sort.
+A sort visualizer made with QT C++. A few sort algorithms are implemented, including bubble sort, selection sort, and insertion sort.
 This visualizer mostly utilizes the QPainter widget, in combination with QVectors to hold and sort the data.
 
-Demo of the bubble sort and other features such as changing the delay between each redraw pause, cancelling, and resetting.
+A quick demo of the bubble sort and other features such as changing the delay between each redraw pause, cancelling, and resetting:
 
 https://user-images.githubusercontent.com/92618774/156939712-19a40bf0-37e6-418c-97ee-d368e4e0bbaf.mp4
 
